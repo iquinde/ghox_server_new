@@ -5,15 +5,16 @@ export const iceRouter = Router();
 iceRouter.get("/local", async (req, res) => {
   return res.json({
     iceServers: [
-      // STUN servers primero para redes locales
-      { urls: "stun:stun.l.google.com:19302" },
-      { urls: "stun:stun1.l.google.com:19302" },
-      { urls: "stun:stun2.l.google.com:19302" },
-      // TURN como backup
+      // Solo TURN servers - incluyen funcionalidad STUN
       {
         urls: "turn:a.relay.metered.ca:80",
         username: "c6747f67ef7088cc93424ac1",
         credential: "uYSdYgb8ac9tRw6V"
+      },
+      {
+        urls: "turn:openrelay.metered.ca:80",
+        username: "openrelayproject",
+        credential: "openrelayproject"
       }
     ]
   });
