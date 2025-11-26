@@ -39,7 +39,6 @@
             <button onclick="getUsers()">👥 Get Users</button>
             <button onclick="startCall()">📞 Start Call (WS)</button>
             <button onclick="startVoiceCall()">🎧 Start Voice Call (REST -> WS)</button>
-            <button onclick="startLocalCall()">🏠 Local WiFi Call</button>
             <button onclick="acceptCall()">✅ Accept Call</button>
             <button onclick="hangup()">❌ Hangup</button>
           </div>
@@ -588,42 +587,6 @@
                 pc.onicecandidate = e => {
                   if (e.candidate) {
                     ws.send(JSON.stringify({ type: 'ice', to: targetUserId, candidate: e.candidate }));
-
-          // Start local WiFi call (optimized for same network)
-          async function startLocalCall() {
-            const jwt = document.getElementById('jwt').value;
-            const targetUserId = document.getElementById('targetUserId').value;
-            const myUserId = document.getElementById('myUserId').value;
-
-            if (!jwt) return log('❌ Missing JWT');
-            if (!targetUserId) return log('❌ Missing target userId');
-            if (!ws || ws.readyState !== WebSocket.OPEN) return log('❌ WebSocket not connected');
-
-            try {
-              // Create call record via REST
-              const res = await fetch(`${API_BASE}/api/calls/voice`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jwt}` },
-                body: JSON.stringify({ to: targetUserId, meta: { initiatedBy: myUserId, voiceOnly: true, localNetwork: true } })
-              });
-              const data = await res.json();
-              if (!res.ok) {
-                log('❌ Local call create failed: ' + JSON.stringify(data));
-                return;
-              }
-              currentCallId = data.callId;
-              log('🏠 Local WiFi call record created, callId: ' + currentCallId);
-
-              // Use local network optimized ICE configuration
-              if (!pc) {
-                const iceRes = await fetch(`${API_BASE}/api/ice/local`, { headers: { Authorization: `Bearer ${jwt}` } });
-                const { iceServers } = await iceRes.json();
-                log('🏠 Using local network ICE servers');
-                pc = new RTCPeerConnection({ iceServers });
-                pc.onicecandidate = e => {
-                  if (e.candidate) {
-                    ws.send(JSON.stringify({ type: 'ice', to: targetUserId, candidate: e.candidate }));
-                    log('🧊 ICE candidate (LOCAL) sent: ' + e.candidate.candidate.slice(0, 50) + '...');
                   }
                 };
                 pc.ontrack = e => {
@@ -634,29 +597,6 @@
                   log('🎧 Remote audio stream received');
                 };
               }
-
-              // Get user media and create offer
-              const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-              localAudioElement.srcObject = stream;
-              localAudioElement.style.display = 'block';
-              log('📹 Local media added');
-              stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-              const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: false });
-              await pc.setLocalDescription(offer);
-              log('📤 Offer (local WiFi) sent');
-
-              ws.send(JSON.stringify({
-                type: 'offer',
-                to: targetUserId,
-                offer: offer,
-                callId: currentCallId
-              }));
-
-            } catch (e) {
-              log(`❌ Local call error: ${e.message || e}`);
-            }
-          }
 
               // get audio-only local media
               if (!localStream || (localStream.getVideoTracks && localStream.getVideoTracks().length > 0)) {
