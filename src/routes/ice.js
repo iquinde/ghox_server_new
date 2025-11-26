@@ -1,20 +1,22 @@
 import { Router } from "express";
 export const iceRouter = Router();
 
-// Configuración para redes locales (mismo WiFi)
+// Configuración para redes locales (mismo WiFi) - usando servidor propio
 iceRouter.get("/local", async (req, res) => {
   return res.json({
     iceServers: [
-      // Solo TURN servers - incluyen funcionalidad STUN
+      // Tu servidor STUN/TURN propio en DigitalOcean (PRIORITARIO)
+      { urls: "stun:104.131.53.14:3478" },
+      {
+        urls: "turn:104.131.53.14:3478",
+        username: "ghoxuser",
+        credential: "GhoxTurn2025"
+      },
+      // Backup externo
       {
         urls: "turn:a.relay.metered.ca:80",
         username: "c6747f67ef7088cc93424ac1",
         credential: "uYSdYgb8ac9tRw6V"
-      },
-      {
-        urls: "turn:openrelay.metered.ca:80",
-        username: "openrelayproject",
-        credential: "openrelayproject"
       }
     ]
   });
