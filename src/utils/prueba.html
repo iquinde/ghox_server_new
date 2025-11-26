@@ -76,6 +76,35 @@
             document.getElementById('logs').innerHTML = '';
           }
 
+          // Función para obtener el stream del micrófono solo una vez
+          async function getOrCreateLocalStream() {
+            if (localStream && localStream.active) {
+              log('🎤 Reutilizando stream de micrófono existente');
+              return localStream;
+            }
+            
+            try {
+              log('🎤 Solicitando permisos de micrófono...');
+              localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+              
+              // Mostrar en elemento local
+              const localAudio = document.getElementById('localAudio') || document.createElement('audio');
+              if (!localAudio.id) {
+                localAudio.id = 'localAudio';
+                localAudio.muted = true;
+                localAudio.autoplay = true;
+                document.body.appendChild(localAudio);
+              }
+              localAudio.srcObject = localStream;
+              
+              log('✅ Permisos de micrófono obtenidos');
+              return localStream;
+            } catch (e) {
+              log(`❌ Error obteniendo micrófono: ${e.message}`);
+              throw e;
+            }
+          }
+
           // Función para reintentar con TURN-only cuando falla la conexión
           async function retryWithTurnOnly() {
             if (usingTurnOnly || retryAttempted) {
@@ -274,10 +303,14 @@
 
             // Get local media (respect voice-only choice)
             const voiceOnly = document.getElementById('voiceOnlyMode').checked;
-            localStream = await navigator.mediaDevices.getUserMedia({ 
-              audio: true, 
-              video: voiceOnly ? false : { width: 640, height: 480 } 
-            });
+            if (voiceOnly) {
+              localStream = await getOrCreateLocalStream();
+            } else {
+              localStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: true, 
+                video: { width: 640, height: 480 } 
+              });
+            }
             document.getElementById('localVideo').srcObject = localStream;
             localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
             log('📹 Local media added');
@@ -399,7 +432,7 @@
                 const incomingVoiceOnly = msg.meta && msg.meta.voiceOnly;
                 if (incomingVoiceOnly) {
                   try {
-                    const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    const s = await getOrCreateLocalStream();
                     // replace video senders if any
                     if (pc) {
                       pc.getSenders().forEach(sender => {
@@ -601,7 +634,7 @@
               // get audio-only local media
               if (!localStream || (localStream.getVideoTracks && localStream.getVideoTracks().length > 0)) {
                 try {
-                  localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                  localStream = await getOrCreateLocalStream();
                   document.getElementById('localVideo').srcObject = localStream;
                   localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
                   log('🎤 Local audio track added');
