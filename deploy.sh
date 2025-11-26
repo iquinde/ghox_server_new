@@ -3,6 +3,16 @@
 # Script de deployment para DigitalOcean
 echo "🚀 Iniciando deployment de Ghox Server en DigitalOcean..."
 
+# Cargar variables de entorno desde .env
+if [ -f .env ]; then
+    echo "📋 Cargando variables de entorno..."
+    set -a
+    source .env
+    set +a
+else
+    echo "⚠️  Archivo .env no encontrado"
+fi
+
 # Verificar variables de entorno
 if [ -z "$MONGO_URI" ]; then
     echo "❌ Error: MONGO_URI no está configurado"
