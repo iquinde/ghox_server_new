@@ -40,7 +40,7 @@ fi
 
 # Iniciar con PM2
 echo "🎯 Iniciando servidor con PM2..."
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 
 # Mostrar status
 pm2 status
