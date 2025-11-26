@@ -62,8 +62,8 @@
           let currentCallId;
           let usingTurnOnly = false; // Rastrear si estamos usando TURN-only
           let retryAttempted = false; // Prevenir múltiples reintentos
-          const API_BASE = 'https://ghox-server.onrender.com';
-          const WS_BASE = 'wss://ghox-server.onrender.com/ws';
+          const API_BASE = 'http://104.131.53.14:8080';
+          const WS_BASE = 'ws://104.131.53.14:8080/ws';
 
           function log(msg) {
             const logs = document.getElementById('logs');
