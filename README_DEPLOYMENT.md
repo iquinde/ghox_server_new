@@ -45,7 +45,7 @@ Servidor P2P WebRTC para videollamadas con soporte completo de signaling y prese
    ```bash
    # .env
    JWT_SECRET=Ghox01
-   MONGO_URI=mongodb+srv://Ghox_db:AdminGhox01@cluster0.1v2iivg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+   MONGO_URI=mongodb+srv://Ghox_db:AdminGhox01@cluster0.1v2iivg.mongodb.net/ghox?retryWrites=true&w=majority&appName=Cluster0
    PORT=8080
    NODE_ENV=production
    ```
@@ -77,7 +77,7 @@ Servidor P2P WebRTC para videollamadas con soporte completo de signaling y prese
      --restart unless-stopped \
      -p 8080:8080 \
      -e JWT_SECRET=Ghox01 \
-     -e MONGO_URI=mongodb+srv://Ghox_db:AdminGhox01@cluster0.1v2iivg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0 \
+     -e MONGO_URI=mongodb+srv://Ghox_db:AdminGhox01@cluster0.1v2iivg.mongodb.net/ghox?retryWrites=true&w=majority&appName=Cluster0 \
      ghox-server
    ```
 
