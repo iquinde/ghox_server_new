@@ -1,27 +1,6 @@
 import { Router } from "express";
 export const iceRouter = Router();
 
-// Configuración para redes locales - usando servidor propio funcionando
-iceRouter.get("/local", async (req, res) => {
-  return res.json({
-    iceServers: [
-      // Tu servidor STUN/TURN funcionando en DigitalOcean
-      { urls: "stun:104.131.53.14:3478" },
-      {
-        urls: "turn:104.131.53.14:3478",
-        username: "ghoxuser",
-        credential: "GhoxTurn2025"
-      },
-      // Servidores de respaldo
-      {
-        urls: "turn:a.relay.metered.ca:80",
-        username: "c6747f67ef7088cc93424ac1",
-        credential: "uYSdYgb8ac9tRw6V"
-      }
-    ]
-  });
-});
-
 // Configuración normal de ICE servers
 iceRouter.get("/", async (req, res) => {
   try {

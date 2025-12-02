@@ -1,50 +1,30 @@
 #!/bin/bash
 
-# Script de deployment para DigitalOcean
-echo "🚀 Iniciando deployment de Ghox Server en DigitalOcean..."
+# Script de despliegue para Digital Ocean
+# Este script se ejecuta en el servidor después de cada push
 
-# Cargar variables de entorno desde .env
-if [ -f .env ]; then
-    echo "📋 Cargando variables de entorno..."
-    set -a
-    source .env
-    set +a
-else
-    echo "⚠️  Archivo .env no encontrado"
-fi
+echo "🚀 Iniciando despliegue..."
 
-# Verificar variables de entorno
-if [ -z "$MONGO_URI" ]; then
-    echo "❌ Error: MONGO_URI no está configurado"
-    exit 1
-fi
+# Navegar al directorio de la aplicación
+cd /opt/ghox_server
 
-if [ -z "$JWT_SECRET" ]; then
-    echo "❌ Error: JWT_SECRET no está configurado"
-    exit 1
-fi
+# Detener la aplicación actual si está ejecutándose
+echo "⏹️ Deteniendo aplicación actual..."
+pm2 stop ghox-server || true
 
-# Crear directorio de logs
-mkdir -p logs
+# Hacer pull de los últimos cambios
+echo "⬇️ Obteniendo últimos cambios..."
+git pull origin main
 
-# Instalar dependencias
+# Instalar/actualizar dependencias
 echo "📦 Instalando dependencias..."
 npm ci --only=production
 
-# Verificar que todos los archivos estén en su lugar
-echo "🔍 Verificando estructura..."
-if [ ! -f "src/index.js" ]; then
-    echo "❌ Error: src/index.js no encontrado"
-    exit 1
-fi
+# Reiniciar la aplicación con PM2
+echo "🔄 Reiniciando aplicación..."
+pm2 restart ghox-server || pm2 start src/index.js --name ghox-server
 
-# Iniciar con PM2
-echo "🎯 Iniciando servidor con PM2..."
-pm2 start ecosystem.config.cjs
+# Guardar configuración de PM2
+pm2 save
 
-# Mostrar status
-pm2 status
-
-echo "✅ Deployment completado!"
-echo "📊 Logs disponibles en: ./logs/"
-echo "🌐 Servidor disponible en puerto 8080"
+echo "✅ Despliegue completado exitosamente!"
