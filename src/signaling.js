@@ -121,6 +121,7 @@ export function initSignaling(server) {
 
         const targetWs = userSockets.get(to);
         if (targetWs && targetWs.readyState === targetWs.OPEN) {
+          // Usuario está en línea - enviar incoming-call al receptor
           targetWs.send(
             JSON.stringify({
               type: "incoming-call",
@@ -129,12 +130,20 @@ export function initSignaling(server) {
               meta: data.meta || {},
             })
           );
+          
+          // Enviar confirmación al emisor que el usuario está en línea
+          ws.send(JSON.stringify({ 
+            type: "call-init-ack", 
+            callId,
+            to: to 
+          }));
         } else {
+          // Usuario no está en línea
           await Call.findByIdAndUpdate(call._id, {
             status: "missed",
             endedAt: new Date(),
           });
-          ws.send(JSON.stringify({ type: "call-missed", callId }));
+          ws.send(JSON.stringify({ type: "call-missed", callId, to: to }));
         }
         return;
       }
